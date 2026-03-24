@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grok Inspired Chat</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            500: '#1d9bf0', // X/Grok style blue
+                            600: '#1a8cd8',
+                        },
+                        dark: {
+                            bg: '#000000',
+                            sidebar: '#16181c',
+                            border: '#2f3336',
+                            hover: '#eff3f41a',
+                            text: '#e7e9ea',
+                            muted: '#71767b'
+                        },
+                        light: {
+                            bg: '#ffffff',
+                            sidebar: '#f7f9f9',
+                            border: '#eff3f4',
+                            hover: '#0f14191a',
+                            text: '#0f1419',
+                            muted: '#536471'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+</head>
+<body class="bg-light-bg text-light-text dark:bg-dark-bg dark:text-dark-text h-screen flex overflow-hidden transition-colors duration-200">
+
+    <!-- Mobile Overlay -->
+    <div id="mobile-overlay" class="fixed inset-0 bg-black/50 z-20 hidden md:hidden transition-opacity duration-300 opacity-0"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-30 w-72 bg-light-sidebar dark:bg-dark-sidebar border-r border-light-border dark:border-dark-border transform -translate-x-full md:translate-x-0 transition-transform duration-300 flex flex-col h-full">
+        
+        <!-- Sidebar Header (New Chat & Theme Toggle) -->
+        <div class="p-4 flex flex-col gap-4">
+            <div class="flex items-center justify-between mt-2 md:mt-0">
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-light-hover dark:hover:bg-dark-hover transition-colors text-light-muted dark:text-dark-muted">
+                    <i class="fas fa-moon dark:hidden"></i>
+                    <i class="fas fa-sun hidden dark:block"></i>
+                </button>
+                <div class="md:hidden">
+                    <button id="close-sidebar" class="p-2 rounded-full hover:bg-light-hover dark:hover:bg-dark-hover transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button id="new-chat-btn" class="flex items-center justify-center gap-2 w-full py-3 px-4 bg-brand-500 hover:bg-brand-600 text-white rounded-full font-semibold transition-colors shadow-sm">
+                <i class="fas fa-plus"></i>
+                <span>New Chat</span>
+            </button> <!-- Search -->
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-light-muted dark:text-dark-muted"></i>
+                </div>
+                <input type="text" id="search-input" placeholder="Search chats..." class="w-full pl-10 pr-4 py-2 bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-full focus:outline-none focus:ring-1 focus:ring-brand-500 text-sm transition-shadow">
+            </div>
+        </div>
+
+        <!-- Chat History Tabs -->
+        <div class="flex border-b border-light-border dark:border-dark-border">
+            <button id="tab-recent" class="flex-1 py-2 text-sm font-semibold border-b-2 border-brand-500 text-light-text dark:text-dark-text transition-colors">Recent</button>
+            <button id="tab-archived" class="flex-1 py-2 text-sm font-semibold border-b-2 border-transparent text-light-muted dark:text-dark-muted hover:text-light-text dark:hover:text-dark-text transition-colors">Archived</button>
+        </div>
+
+        <!-- Chat List -->
+        <div id="chat-list-container" class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
+            <!-- Chats will be rendered here by jQuery -->
+        </div>
+
+    </aside>
+
+    <!-- Main Chat Area -->
+    <main class="flex-1 flex flex-col h-full relative min-w-0">
+        <!-- Header (Mobile Hamburger & Title) -->
+        <header class="h-14 md:h-0 flex items-center px-4 border-b border-light-border dark:border-dark-border md:border-none shrink-0 bg-light-bg/80 dark:bg-dark-bg/80 backdrop-blur-sm sticky top-0 md:static z-10 transition-colors duration-200">
+            <button id="open-sidebar" class="p-2 -ml-2 rounded-full hover:bg-light-hover dark:hover:bg-dark-hover transition-colors md:hidden text-light-text dark:text-dark-text">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+            <h1 id="current-chat-title-mobile" class="ml-2 font-semibold truncate md:hidden">New Chat</h1>
+        </header>
+
+        <!-- Messages Area -->
+        <div id="messages-area" class="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-8 flex flex-col gap-6 max-w-4xl mx-auto w-full">
+            <!-- Messages rendered here -->
+            
+            <div id="empty-state" class="m-auto flex flex-col items-center justify-center text-center space-y-4 max-w-sm">
+                <div class="w-16 h-16 bg-light-sidebar dark:bg-dark-sidebar rounded-full flex items-center justify-center text-3xl mb-2 shadow-sm border border-light-border dark:border-dark-border">
+                    🪄
+                </div>
+                <h2 class="text-2xl font-bold tracking-tight">How can I help you today?</h2>
+                <p class="text-light-muted dark:text-dark-muted text-sm">Let's brainstorm, write code, or learn something new.</p>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="p-4 md:p-6 w-full max-w-4xl mx-auto shrink-0 bg-transparent flex flex-col">
+            <!-- File Previews Container -->
+            <div id="file-preview-container" class="flex gap-2 flex-wrap mb-2 hidden"></div>
+            
+            <div class="relative bg-light-sidebar dark:bg-dark-sidebar border border-light-border dark:border-dark-border rounded-2xl shadow-sm focus-within:ring-1 focus-within:ring-light-text dark:focus-within:ring-dark-text focus-within:border-light-text dark:focus-within:border-dark-text transition-all duration-200">
+                <input type="file" id="file-upload" class="hidden" accept="image/*,.pdf" multiple>
+                <button id="attach-btn" class="absolute left-2 bottom-2 p-2 rounded-xl text-light-muted dark:text-dark-muted hover:text-light-text dark:hover:text-dark-text hover:bg-light-hover dark:hover:bg-dark-hover transition-colors flex items-center justify-center">
+                    <i class="fas fa-paperclip"></i>
+                </button>
+                <textarea id="message-input" rows="1" placeholder="Ask anything..." class="w-full bg-transparent border-none focus:ring-0 resize-none py-4 pl-12 pr-12 text-light-text dark:text-dark-text placeholder-light-muted dark:placeholder-dark-muted custom-scrollbar max-h-32" style="min-height: 56px;"></textarea>
+                <button id="send-btn" class="absolute right-2 bottom-2 p-2 rounded-xl text-white bg-light-muted dark:bg-dark-muted hover:bg-light-text dark:hover:bg-dark-text transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center" disabled>
+                    <i class="fas fa-arrow-up"></i>
+                </button>
+            </div>
+            <p class="text-xs text-center text-light-muted dark:text-dark-muted mt-3">Messages are generated by mock logic. This is a UI demo.</p>
+        </div>
+    </main>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="fixed inset-0 z-50 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" id="delete-modal-backdrop"></div>
+        <div class="bg-light-bg dark:bg-dark-sidebar border border-light-border dark:border-dark-border rounded-2xl p-6 md:p-8 max-w-sm w-[90%] md:w-full z-10 shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col gap-4 text-center items-center">
+            <div class="w-12 h-12 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-red-500 mb-2">
+                <i class="fas fa-exclamation-circle text-xl"></i>
+            </div>
+            <h3 class="text-xl font-bold">Delete Chat?</h3>
+            <p class="text-light-muted dark:text-dark-muted text-sm px-2">This action cannot be undone. You will lose all history for this conversation.</p>
+            <div class="flex gap-3 w-full mt-4">
+                <button id="cancel-delete" class="flex-1 py-2.5 rounded-full font-semibold border border-light-border dark:border-dark-border hover:bg-light-hover dark:hover:bg-dark-hover transition-colors">Cancel</button>
+                <button id="confirm-delete" class="flex-1 py-2.5 rounded-full font-semibold bg-red-500 hover:bg-red-600 text-white transition-colors shadow-sm">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
